@@ -62,3 +62,34 @@ The tests were also
 If you want to use a testing framework like [GivenWhen](https://github.com/invisibledrygoods/GivenWhenUnity)
 along with Select then it is recommended that you wrap your selectors in a `MonoBehaviour`, and write a mock
 Select that allows you to inject fake results.
+
+In Progress
+-----------
+
+Splat:
+
+    new Select("*"); // select everything
+
+Replace Get with Each:
+
+    new Select("npc.ShopKeeper").Each<ShopKeeper>(shop => shop.Restock());
+
+Boolean GameObject meta-selectors (may or may not be slow)
+
+    new Select("enemy:active").Deactivate(); // Deactivate all active enemies
+    new Select("enemy:!active").Destroy();   // Destroy all inactive enemies
+
+Boolean Component meta-selectors (would be slow):
+
+    new Select("npc.ShopKeeper:closed").Each<ShopKeeper>(shop => shop.Open());
+    new Select("npc.ShopKeeper:!closed").Each<ShopKeeper>(shop => shop.Close());
+
+Comparison Component meta-selectors (would be very very slow):
+
+    new Select("npc.ShopKeeper[gold=0]").Each<ShopKeeper>(shop => shop.Warn());
+    new Select("npc.ShopKeeper[gold<0]").Each<ShopKeeper>(shop => shop.Foreclose());
+
+Has meta-selector:
+
+    // deal damage to every mob that has a cursed sword somewhere in their heirarchy
+    new Select(".Mob:has(.CursedSword)").Each<Mob>(mob => mob.DealDamage(5));
