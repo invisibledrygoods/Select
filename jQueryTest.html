@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <title>jquery comparison</title>
+  </head>
+  <body>
+    <div id='Bunny' class='White'>
+      <p id='Paws'/>
+      <p id='Ears' class='White'/>
+    </div>
+
+    <div id='Cat' class='Brown White'>
+      <p id='Paws' class='White'/>
+    </div>
+
+    <div id='Dog' class='Brown'>
+      <p id='Paws' class='Brown'/>
+    </div>
+
+    <div id='Grandparent' class='Parent Child'>
+      <div id='ParentA' class='Parent Child'>
+        <div id='ChildA' class='Child'/>
+        <div id='ChildB' class='Child'/>
+      </div>
+      
+      <div id='ParentB' class='Parent Child'>
+        <div id='ChildC' class='Child'/>
+      </div>
+    </div>
+   
+    <p><strong>Note:</strong></p>
+    <p>These are the unity tests applied against jquery, the failing test is intentional and demonstrates a difference in the way javascript and unity treat duplicate id's</p>
+    <ul id='errors'></ul>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $.fn.ShouldContain = function() {
+          if (+arguments[0]) {
+            this.ShouldContainN(arguments[0], arguments[1]);
+          } else {
+            for (argument in arguments) {
+              this.ShouldContainN(1, arguments[argument]);
+            }
+          }
+        }
+        
+        $.fn.ShouldContainN = function(number, id) {
+          var count = 0;
+          this.each(function() {
+            if (this.id == id) {
+              count++;
+            }
+          });
+          // write it
+          if (count != number) {
+            $('#errors').append('<li style="color: red">' + this.selector + " should return " + number + " " + id + " but returned " + count + "</li>")
+          } else {
+            $('#errors').append('<li style="color: green">' + this.selector + " returned the correct number of " + id + '</li>');
+          }
+        };
+
+        $("#Paws").ShouldContain(3, "Paws");
+        
+        $("#Ears").ShouldContain("Ears");
+        $("#ChildA").ShouldContain("ChildA");
+        $(".Brown").ShouldContain("Dog", "Paws", "Cat");
+        $(".Parent").ShouldContain("ParentA", "ParentB", "Grandparent");
+        $("p").ShouldContain(3, "Paws");
+        $("p").ShouldContain("Ears");
+
+        $("div.White").ShouldContain("Cat");
+        $("p.White").ShouldContain("Paws", "Ears");
+        $(".Brown.White").ShouldContain("Cat");
+        $(".Parent.Child").ShouldContain("ParentA", "ParentB");
+
+        $("#Cat #Paws").ShouldContain("Paws");
+        if ($("#Cat #Paws")[0].parentNode.id != "Cat")
+        {
+          $('#errors').append('<li style="color: red">#Cat #Paws should have Cat as a parent</li>')();
+        }
+
+        $(".White p").ShouldContain(2, "Paws");
+        $(".White p").ShouldContain("Ears");
+        $(".Parent .Child").ShouldContain("ParentA", "ParentB", "ChildA", "ChildB", "ChildC");
+        $(".Brown #Paws").ShouldContain(2, "Paws");
+
+        $(".Parent, .Brown #Paws").ShouldContain(2, "Paws");
+        $(".Parent, .Brown #Paws").ShouldContain("ParentA", "ParentB", "Grandparent");
+
+        $(".Brown #Paws, .White #Ears, .Parent").ShouldContain(2, "Paws");
+        $(".Brown #Paws, .White #Ears, .Parent").ShouldContain("Ears", "Grandparent", "ParentA", "ParentB");
+      });
+    </script>
+  </body>
+</html>
