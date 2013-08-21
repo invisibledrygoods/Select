@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using SelectShouldContain;
 
-public class RunsTests : MonoBehaviour
+public class TestsSelect : MonoBehaviour
 {
     void Start()
     {
