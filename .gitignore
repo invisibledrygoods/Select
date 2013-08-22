@@ -9,6 +9,7 @@ Temp
 *.pidb
 *.unityproj
 *.sln
+*.suo
 *.userprefs
 packages
 packages.meta

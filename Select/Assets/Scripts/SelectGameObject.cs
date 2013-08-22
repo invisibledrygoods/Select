@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public partial class Select
 {
@@ -8,167 +9,77 @@ public partial class Select
     {
         get
         {
-            return gameObjects.Keys.Select(i => i.name).ToArray();
+            return this.Select(i => i.name).ToArray();
         }
     }
 
-    public Rigidbody[] rigidbodies
+    public T[] Get<T>() where T : Component
     {
-        get
+        return this.Select(i => i.GetComponent<T>()).Where(i => i != null).ToArray();
+    }
+
+    public Select Each(Action<GameObject> act)
+    {
+        foreach (GameObject obj in this)
         {
-            return gameObjects.Keys.Select(i => i.rigidbody).Where(i => i != null).ToArray();
+            act(obj);
         }
+        return this;
     }
 
-    public Camera[] cameras
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.camera).Where(i => i != null).ToArray();
-        }
-    }
-
-    public Light[] lights
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.light).Where(i => i != null).ToArray();
-        }
-    }
-
-    public Animation[] animations
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.animation).Where(i => i != null).ToArray();
-        }
-    }
-
-    public ConstantForce[] constantForces
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.constantForce).Where(i => i != null).ToArray();
-        }
-    }
-
-    public Renderer[] renderers
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.renderer).Where(i => i != null).ToArray();
-        }
-    }
-
-    public AudioSource[] audios
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.audio).Where(i => i != null).ToArray();
-        }
-    }
-
-    public Collider[] colliders
-    {
-        get
-        {
-            return gameObjects.Keys.Select(i => i.collider).Where(i => i != null).ToArray();
-        }
-    }
-
-    public T[] Get<T>()
-        where T : Component
-    {
-        return gameObjects.Keys.Select(i => i.GetComponent<T>()).Where(i => i != null).ToArray();
-    }
-
-    public Select Disable<T>()
-        where T : MonoBehaviour
+    public Select Each<T>(Action<T> act) where T : Component
     {
         foreach (T behaviour in Get<T>())
         {
-            behaviour.enabled = false;
+            act(behaviour);
         }
 
         return this;
     }
 
-    public Select Enable<T>()
-        where T : MonoBehaviour
+    public Select Disable<T>() where T : MonoBehaviour
     {
-        foreach (T behaviour in Get<T>())
-        {
-            behaviour.enabled = true;
-        }
+        return Each<T>(component => component.enabled = false);
+    }
 
-        return this;
+    public Select Enable<T>() where T : MonoBehaviour
+    {
+        return Each<T>(component => component.enabled = true);
     }
 
     public Select Activate()
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.SetActive(true);
-        }
-
-        return this;
+        return Each(obj => obj.SetActive(true));
     }
 
     public Select Deactivate()
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.SetActive(false);
-        }
-
-        return this;
+        return Each(obj => obj.SetActive(false));
     }
 
     public Select Show()
     {
-        foreach (Renderer renderer in Get<Renderer>())
-        {
-            renderer.enabled = true;
-        } 
-
-        return this;
+        return Each<Renderer>(renderer => renderer.enabled = true);
     }
 
     public Select Hide()
     {
-        foreach (Renderer renderer in Get<Renderer>())
-        {
-            renderer.enabled = false;
-        }
-
-        return this;
+        return Each<Renderer>(renderer => renderer.enabled = false);
     }
 
     public Select SetTag(string tag)
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.tag = tag;
-        }
-        return this;
+        return Each(obj => obj.tag = tag);
     }
 
     public Select SetLayer(int layer)
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.layer = layer;
-        }
-        return this;
+        return Each(obj => obj.layer = layer);
     }
 
     public Select SendMessage(string message, SendMessageOptions options)
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.SendMessage(message, options);
-        }
-        return this;
+        return Each(obj => obj.SendMessage(message, options));
     }
 
     public Select SendMessage(string message)
@@ -176,55 +87,33 @@ public partial class Select
         return SendMessage(message, SendMessageOptions.DontRequireReceiver);
     }
 
-    public Select AddComponent<T>()
-        where T : Component
+    public Select AddComponent<T>() where T : Component
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            obj.AddComponent<T>();
-        }
-        return this;
+        return Each(obj => obj.AddComponent<T>());
     }
 
-    public Select Destroy<T>()
-        where T : Component
+    public Select RemoveComponent<T>() where T : Component
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            T component = obj.GetComponent<T>();
-            if (component != null)
-            {
-                Component.Destroy(component);
-            }
-        }
-        return this;
+        return Each<T>(component => Component.Destroy(component));
     }
 
     public Select Destroy()
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            GameObject.Destroy(obj);
-        }
-        return this;
+        return Each(obj => GameObject.Destroy(obj));
     }
 
     public Select DontDestroyOnLoad()
     {
-        foreach (GameObject obj in gameObjects.Keys)
-        {
-            GameObject.DontDestroyOnLoad(obj);
-        }
-        return this;
+        return Each(obj => GameObject.DontDestroyOnLoad(obj));
     }
 
     public Select Instantiate()
     {
         List<GameObject> clones = new List<GameObject>();
 
-        foreach (GameObject obj in gameObjects.Keys)
+        foreach (GameObject obj in this)
         {
-            GameObject clone = Object.Instantiate(obj, obj.transform.position, obj.transform.rotation) as GameObject;
+            GameObject clone = UnityEngine.Object.Instantiate(obj, obj.transform.position, obj.transform.rotation) as GameObject;
             clone.name = obj.name;
             clones.Add(clone);
         }
