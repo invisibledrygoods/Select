@@ -20,22 +20,18 @@ Delete all cowards:
     
 Paint all allies' weapons red with blood:
 
-    foreach (Renderer renderer in new Select("ally .Weapon").renderers) {
-        renderer.material.color = Color.red;
-    }
+    new Select("ally .Weapon").Each<Renderer>(renderer => renderer.material.color = Color.red);
 
 Knock all wimpy foes away from this accursed place:
 
-    foreach (RigidBody enemy in new Select("enemy.Wimpy").rigidbodies) {
+    foreach (RigidBody enemy in new Select("enemy.Wimpy").Get<RigidBody>()) {
         Vector3 away = enemy.transform.position - transform.position;
         enemy.AddForce(away.normalized * 10 / away.magnitude);
     }
 
 Bring prosperity to the city once again:
 
-    foreach (ShopKeeper shopkeeper in new Select("npc.ShopKeeper").Get<ShopKeeper>()) {
-      shopkeeper.Restock();
-    }
+    new Select("npc.ShopKeeper").Each<ShopKeeper>(shopkeeper => shopkeeper.Restock());
 
 Translating selectors between HTML and Unity
 --------------------------------------------
@@ -69,10 +65,6 @@ In Progress
 Splat:
 
     new Select("*"); // select everything
-
-Replace Get with Each:
-
-    new Select("npc.ShopKeeper").Each<ShopKeeper>(shop => shop.Restock());
 
 Boolean GameObject meta-selectors (may or may not be slow)
 
