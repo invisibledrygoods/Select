@@ -102,7 +102,7 @@ public partial class Select : IEnumerable<GameObject>
                 attribute = attribute.TrimStart('!');
             }
 
-            FieldInfo field = component.GetType().GetField(attribute, BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo field = component.GetType().GetField(attribute);
 
             if (field != null)
             {
@@ -119,7 +119,7 @@ public partial class Select : IEnumerable<GameObject>
                 }
             }
 
-            PropertyInfo property = component.GetType().GetProperty(attribute, BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
+            PropertyInfo property = component.GetType().GetProperty(attribute);
 
             if (property != null)
             {

@@ -40,8 +40,13 @@ public class TestsSelect : MonoBehaviour
         new Select(".White:enabled").ShouldContainExactly("Bunny", "Paws");
         new Select(".White:!enabled").ShouldContainExactly("Cat", "Ears");
 
+        new Select(".Brown:enabled.White:disabled").ShouldContainExactly("Cat");
+
         new Select(".Brown:fluffy").ShouldContainExactly("Dog");
         new Select(".Brown:fluffy .Brown:!fluffy").ShouldContainExactly("Paws");
+
+        new Select(".Brown:fluffy:enabled").ShouldContainExactly("Dog");
+        new Select(".Brown:fluffy:!enabled").ShouldContain(0, "Dog");
     }
 }
 
