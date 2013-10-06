@@ -47,6 +47,12 @@ public class TestsSelect : MonoBehaviour
 
         new Select(".Brown:fluffy:enabled").ShouldContainExactly("Dog");
         new Select(".Brown:fluffy:!enabled").ShouldContain(0, "Dog");
+
+        new Select(".Brown[fluffy=true]").ShouldContainExactly("Dog");
+        new Select(".Brown[spots=3]").ShouldContainExactly("Cat");
+        new Select(".Brown[spots>=3]").ShouldContainExactly("Cat", "Dog");
+        new Select(".Brown[spots<3]").ShouldContainExactly("Paws");
+        new Select(".Brown[spots!=3]").ShouldContainExactly("Paws", "Dog");
     }
 }
 

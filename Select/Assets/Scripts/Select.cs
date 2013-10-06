@@ -43,15 +43,15 @@ public partial class Select : IEnumerable<GameObject>
             tail = query.Substring(query.IndexOf(',') + 1);
         }
 
-        foreach (Match match in Regex.Matches(" " + head.Trim(), @"(#[\w-]+|.[:!\w_]+|\s+#[\w-]+|\s+\w+|\s+.[:!\w_]+)"))
+        foreach (Match match in Regex.Matches(" " + head.Trim(), @"(#[\w-]+|\.[\w_]+(?:\[.+\]|:!?[\w_]+)*|\s+#[\w-]+|\s+\w+|\s+\.[\w_]+(?:\[.+\]|:!?[\w_]+)*)"))
         {
             if (match.Value.StartsWith(" ."))
             {
-                List<string> meta = match.Value.Split(':').ToList();
+                List<string> meta = ParseMetas(match.Value);
                 string cl = meta[0];
                 meta.RemoveAt(0);
 
-                FindByClass(cl.Trim(" .".ToCharArray()), meta);
+                FindByClass(cl, meta);
             }
             else if (match.Value.StartsWith(" #"))
             {
@@ -63,11 +63,11 @@ public partial class Select : IEnumerable<GameObject>
             }
             else if (match.Value.StartsWith("."))
             {
-                List<string> meta = match.Value.Split(':').ToList();
+                List<string> meta = ParseMetas(match.Value);
                 string cl = meta[0];
                 meta.RemoveAt(0);
 
-                PruneWithoutClass(cl.Trim(".".ToCharArray()), meta);
+                PruneWithoutClass(cl, meta);
             }
             else if (match.Value.StartsWith("#"))
             {
@@ -81,6 +81,18 @@ public partial class Select : IEnumerable<GameObject>
         }
     }
 
+    List<string> ParseMetas(string query)
+    {
+        List<string> meta = new List<string>();
+
+        foreach (Match match in Regex.Matches(query, @"(\.[\w_]+|\[.*\]|:!?[\w_]+)"))
+        {
+            meta.Add(match.Value);
+        }
+
+        return meta;
+    }
+
     void Union(Select selection)
     {
         foreach (GameObject obj in selection)
@@ -89,50 +101,109 @@ public partial class Select : IEnumerable<GameObject>
         }
     }
 
+    bool MatchesBooleanMeta(object obj, string meta)
+    {
+        bool expected = true;
+        string attribute = meta;
+
+        if (attribute.StartsWith("!"))
+        {
+            expected = false;
+            attribute = attribute.TrimStart('!');
+        }
+
+        FieldInfo field = obj.GetType().GetField(attribute);
+
+        if (field != null)
+        {
+            try
+            {
+                if ((bool)field.GetValue(obj) != expected)
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+            }
+        }
+
+        PropertyInfo property = obj.GetType().GetProperty(attribute);
+
+        if (property != null)
+        {
+            try
+            {
+                if ((bool)property.GetGetMethod().Invoke(obj, null) != expected)
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+            }
+        }
+
+        return true;
+    }
+
+    bool MatchesComparisonMeta(object obj, string meta)
+    {
+        Match match = Regex.Match(meta, @"^([\w_]+)(!=|=|>=|<=|>|<)(.+)$");
+
+        if (!match.Success)
+        {
+            throw new Exception("Invalid syntax in meta-selector [" + meta + "]");
+        }
+
+        string fieldName = match.Groups[1].Value;
+        string comparisonType = match.Groups[2].Value;
+        string valueString = match.Groups[3].Value;
+
+        FieldInfo field = obj.GetType().GetField(fieldName);
+
+        if (field == null)
+        {
+            throw new Exception("Invalid field in meta-selector [" + meta + "]");
+        }
+        
+        MethodInfo parseMethod = field.FieldType.GetMethod("Parse", new Type[] { typeof(string) });
+        MethodInfo compareMethod = field.FieldType.GetMethod("CompareTo", new Type[] { field.FieldType });
+
+        if (parseMethod == null || compareMethod == null)
+        {
+            throw new Exception("Field type in [" + meta + "] needs both a Parse and a CompareTo method for this selector to work");
+        }
+
+        object value = parseMethod.Invoke(null, new string[] { valueString });
+        int comparison = (int)compareMethod.Invoke(field.GetValue(obj), new object[] { value });
+
+        return ((comparisonType == "=" && comparison == 0)
+             || (comparisonType == ">" && comparison > 0)
+             || (comparisonType == "<" && comparison < 0)
+             || (comparisonType == ">=" && comparison >= 0)
+             || (comparisonType == "<=" && comparison <= 0)
+             || (comparisonType == "!=" && comparison != 0));
+    }
+
     bool MatchesMeta(Component component, List<string> metas)
     {
         foreach (string meta in metas)
         {
-            bool expected = true;
-            string attribute = meta;
-            
-            if (attribute.StartsWith("!"))
+            if (meta.StartsWith(":"))
             {
-                expected = false;
-                attribute = attribute.TrimStart('!');
-            }
-
-            FieldInfo field = component.GetType().GetField(attribute);
-
-            if (field != null)
-            {
-                try
+                if (!MatchesBooleanMeta(component, meta.TrimStart(':')))
                 {
-                    if ((bool)field.GetValue(component) != expected)
-                    {
-                        return false;
-                    }
-                }
-                catch
-                {
-                    throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+                    return false;
                 }
             }
-
-            PropertyInfo property = component.GetType().GetProperty(attribute);
-
-            if (property != null)
+            else if (meta.StartsWith("["))
             {
-                try
+                if (!MatchesComparisonMeta(component, meta.Trim("[]".ToCharArray())))
                 {
-                    if ((bool)property.GetGetMethod().Invoke(component, null) != expected)
-                    {
-                        return false;
-                    }
-                }
-                catch
-                {
-                    throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+                    return false;
                 }
             }
         }
