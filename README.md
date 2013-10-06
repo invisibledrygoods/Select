@@ -38,18 +38,21 @@ Reopen the castle and close the barracks:
     new Select("castle .Door:!open").Each<Door>(door => door.Open());
     new Select("barracks .Door:open").Each<Door>(door => door.Close());
 
+Levy a tax against your new domain:
+
+    new Select("npc.ShopKeeper[gold=0]").Each<ShopKeeper>(shop => shop.Warn());
+    new Select("npc.ShopKeeper[gold<0]").Each<ShopKeeper>(shop => shop.Foreclose());
+
 Translating selectors between HTML and Unity
 --------------------------------------------
 
-| HTML/CSS | Unity      |
-|----------|------------|
-| tag      | tag        |
-| .class   | .Component |
-| #id      | #name      |
-| :state   | :boolean   |
-
-Note: There's only limited meta-selectors and no selectors for layers yet. We'll probably add them as we need them.
-If you need a feature urgently hit me up and I can work on writing it.
+| HTML/CSS     | Unity         |
+|--------------|---------------|
+| tag          | tag           |
+| .class       | .Component    |
+| #id          | #name         |
+| :state       | :boolean      |
+| [attr=value] | [IComparable] |
 
 Tests
 -----
@@ -71,15 +74,6 @@ __Splat:__
 
     new Select("*"); // select everything
 
-__Comparison Component meta-selectors:__
-
-This would be an insanely slow operation... Easiest way to write it would be to grab the field by name,
-grab it's type, check for Parse() and CompareTo() methods on its type, and pass the string value into Parse()
-then the results into CompareTo().
-
-    new Select("npc.ShopKeeper[gold=0]").Each<ShopKeeper>(shop => shop.Warn());
-    new Select("npc.ShopKeeper[gold<0]").Each<ShopKeeper>(shop => shop.Foreclose());
-    
 __Has meta-selector:__
 
 These seems really hard. Probably the best bet would be to make a second Select for the inner query then
@@ -88,3 +82,5 @@ heirarchy.
 
     // deal damage to every mob that has a cursed sword somewhere in their heirarchy
     new Select(".Mob:has(.CursedSword)").Each<Mob>(mob => mob.DealDamage(5));
+
+If you need a feature urgently hit me up and I can work on it.
