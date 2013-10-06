@@ -67,21 +67,24 @@ Select that allows you to inject fake results.
 In Progress
 -----------
 
-Splat:
+__Splat:__
 
     new Select("*"); // select everything
 
-Boolean GameObject meta-selectors (may or may not be slow)
+__Comparison Component meta-selectors:__
 
-    new Select("enemy:active").Deactivate(); // Deactivate all active enemies
-    new Select("enemy:!active").Destroy();   // Destroy all inactive enemies
-
-Comparison Component meta-selectors (would be very very slow):
+This would be an insanely slow operation... Easiest way to write it would be to grab the field by name,
+grab it's type, check for Parse() and CompareTo() methods on its type, and pass the string value into Parse()
+then the results into CompareTo().
 
     new Select("npc.ShopKeeper[gold=0]").Each<ShopKeeper>(shop => shop.Warn());
     new Select("npc.ShopKeeper[gold<0]").Each<ShopKeeper>(shop => shop.Foreclose());
+    
+__Has meta-selector:__
 
-Has meta-selector:
+These seems really hard. Probably the best bet would be to make a second Select for the inner query then
+prune any selections from the outer query that don't have at least one element of the inner query in their
+heirarchy.
 
     // deal damage to every mob that has a cursed sword somewhere in their heirarchy
     new Select(".Mob:has(.CursedSword)").Each<Mob>(mob => mob.DealDamage(5));
