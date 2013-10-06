@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using SelectShouldContain;
 
@@ -36,6 +36,12 @@ public class TestsSelect : MonoBehaviour
 
         new Select(".Brown #Paws, .White #Ears, .Parent").ShouldContain(2, "Paws");
         new Select(".Brown #Paws, .White #Ears, .Parent").ShouldContain("Ears", "Grandparent", "ParentA", "ParentB");
+
+        new Select(".White:enabled").ShouldContainExactly("Bunny", "Paws");
+        new Select(".White:!enabled").ShouldContainExactly("Cat", "Ears");
+
+        new Select(".Brown:fluffy").ShouldContainExactly("Dog");
+        new Select(".Brown:fluffy .Brown:!fluffy").ShouldContainExactly("Paws");
     }
 }
 
@@ -48,6 +54,30 @@ namespace SelectShouldContain
             foreach (string name in names)
             {
                 select.ShouldContain(1, name);
+            }
+        }
+
+        public static void ShouldContainExactly(this Select select, params string[] names)
+        {
+            select.ShouldContain(names);
+
+            foreach (string selected in select.names)
+            {
+                bool found = false;
+
+                foreach (string name in names)
+                {
+                    if (selected == name)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    select.ShouldContain(0, selected);
+                }
             }
         }
 

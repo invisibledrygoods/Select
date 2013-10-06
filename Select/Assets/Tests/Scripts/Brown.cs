@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Brown : MonoBehaviour
 {
+    public bool fluffy;
+
     void Awake()
     {
         

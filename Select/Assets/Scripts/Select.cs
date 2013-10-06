@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -42,11 +43,15 @@ public partial class Select : IEnumerable<GameObject>
             tail = query.Substring(query.IndexOf(',') + 1);
         }
 
-        foreach (Match match in Regex.Matches(" " + head.Trim(), @"(#[\w-]+|.[\w_]+|\s+#[\w-]+|\s+\w+|\s+.[\w_]+)"))
+        foreach (Match match in Regex.Matches(" " + head.Trim(), @"(#[\w-]+|.[:!\w_]+|\s+#[\w-]+|\s+\w+|\s+.[:!\w_]+)"))
         {
             if (match.Value.StartsWith(" ."))
             {
-                FindByClass(match.Value.Trim(" .".ToCharArray()));
+                List<string> meta = match.Value.Split(':').ToList();
+                string cl = meta[0];
+                meta.RemoveAt(0);
+
+                FindByClass(cl.Trim(" .".ToCharArray()), meta);
             }
             else if (match.Value.StartsWith(" #"))
             {
@@ -55,9 +60,14 @@ public partial class Select : IEnumerable<GameObject>
             else if (match.Value.StartsWith(" "))
             {
                 FindByTag(match.Value.Trim());
-            } else if (match.Value.StartsWith("."))
+            }
+            else if (match.Value.StartsWith("."))
             {
-                PruneWithoutClass(match.Value.Trim(" .".ToCharArray()));
+                List<string> meta = match.Value.Split(':').ToList();
+                string cl = meta[0];
+                meta.RemoveAt(0);
+
+                PruneWithoutClass(cl.Trim(".".ToCharArray()), meta);
             }
             else if (match.Value.StartsWith("#"))
             {
@@ -79,7 +89,58 @@ public partial class Select : IEnumerable<GameObject>
         }
     }
 
-    void FindByClass(string className)
+    bool MatchesMeta(Component component, List<string> metas)
+    {
+        foreach (string meta in metas)
+        {
+            bool expected = true;
+            string attribute = meta;
+            
+            if (attribute.StartsWith("!"))
+            {
+                expected = false;
+                attribute = attribute.TrimStart('!');
+            }
+
+            FieldInfo field = component.GetType().GetField(attribute, BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
+
+            if (field != null)
+            {
+                try
+                {
+                    if ((bool)field.GetValue(component) != expected)
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+                }
+            }
+
+            PropertyInfo property = component.GetType().GetProperty(attribute, BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
+
+            if (property != null)
+            {
+                try
+                {
+                    if ((bool)property.GetGetMethod().Invoke(component, null) != expected)
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    throw new Exception("Trying to use meta-selector :" + meta + " to access non-boolean field.");
+                }
+            }
+        }
+
+        return true;
+    }
+
+    void FindByClass(string className, List<string> meta)
     {
         System.Type type = System.Type.GetType(className) ?? Assembly.Load("UnityEngine").GetType("UnityEngine." + className);
 
@@ -93,7 +154,7 @@ public partial class Select : IEnumerable<GameObject>
                 {
                     foreach (Component component in parent.GetComponentsInChildren(type))
                     {
-                        if (component.gameObject != parent)
+                        if (component.gameObject != parent && MatchesMeta(component, meta))
                         {
                             gameObjects[component.gameObject] = true;
                         }
@@ -104,7 +165,10 @@ public partial class Select : IEnumerable<GameObject>
             {
                 foreach (Component component in Resources.FindObjectsOfTypeAll(type))
                 {
-                    gameObjects[component.gameObject] = true;
+                    if (MatchesMeta(component, meta))
+                    {
+                        gameObjects[component.gameObject] = true;
+                    }
                 }
             }
         }
@@ -166,13 +230,25 @@ public partial class Select : IEnumerable<GameObject>
         }
     }
 
-    void PruneWithoutClass(string className)
+    void PruneWithoutClass(string className, List<string> meta)
     {
         System.Type type = System.Type.GetType(className) ?? Assembly.Load("UnityEngine").GetType("UnityEngine." + className);
 
         List<GameObject> toRemove = gameObjects.Keys.ToList().Where((GameObject obj) =>
             {
-                return obj.GetComponent(type) == null;
+                Component component = obj.GetComponent(type);
+
+                if (component == null)
+                {
+                    return true;
+                }
+
+                if (!MatchesMeta(component, meta))
+                {
+                    return true;
+                }
+
+                return false;
             }).ToList();
 
         foreach (GameObject remove in toRemove)
