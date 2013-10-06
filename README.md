@@ -38,7 +38,7 @@ Reopen the castle and close the barracks:
     new Select("castle .Door:!open").Each<Door>(door => door.Open());
     new Select("barracks .Door:open").Each<Door>(door => door.Close());
 
-Levy a tax against your new domain:
+Levy a tax on your new domain:
 
     new Select("npc.ShopKeeper[gold=0]").Each<ShopKeeper>(shop => shop.Warn());
     new Select("npc.ShopKeeper[gold<0]").Each<ShopKeeper>(shop => shop.Foreclose());
