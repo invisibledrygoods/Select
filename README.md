@@ -33,6 +33,11 @@ Bring prosperity to the city once again:
 
     new Select("npc.ShopKeeper").Each<ShopKeeper>(shopkeeper => shopkeeper.Restock());
 
+Reopen the castle and close the barracks:
+
+    new Select("castle .Door:!open").Each<Door>(door => door.Open());
+    new Select("barracks .Door:open").Each<Door>(door => door.Close());
+
 Translating selectors between HTML and Unity
 --------------------------------------------
 
@@ -41,19 +46,19 @@ Translating selectors between HTML and Unity
 | tag      | tag        |
 | .class   | .Component |
 | #id      | #name      |
+| :state   | :boolean   |
 
-Note: There's no meta-selectors or selectors for layers yet. We'll probably add them as we need them.
-Remember to give us a pull request if you add any (or just a normal request if you really want one but don't
-know how to implement it).
+Note: There's only limited meta-selectors and no selectors for layers yet. We'll probably add them as we need them.
+If you need a feature urgently hit me up and I can work on writing it.
 
 Tests
 -----
 
 Tests can be run by finding and launching the scene SelectTestRunner
 
-The tests were also
+Most of the tests were also
 [rewritten to run against jQuery](https://rawgithub.com/invisibledrygoods/Select/master/jQueryTest.html)
-(note: these tests are for comparison, failing tests demonstrate differences, not flaws)
+(note: these tests are for comparison, failing tests demonstrate differences, not bugs)
 
 If you want to use a testing framework like [GivenWhen](https://github.com/invisibledrygoods/GivenWhenUnity)
 along with Select then it is recommended that you wrap your selectors in a `MonoBehaviour`, and write a mock
@@ -70,11 +75,6 @@ Boolean GameObject meta-selectors (may or may not be slow)
 
     new Select("enemy:active").Deactivate(); // Deactivate all active enemies
     new Select("enemy:!active").Destroy();   // Destroy all inactive enemies
-
-Boolean Component meta-selectors (would be slow):
-
-    new Select("npc.ShopKeeper:closed").Each<ShopKeeper>(shop => shop.Open());
-    new Select("npc.ShopKeeper:!closed").Each<ShopKeeper>(shop => shop.Close());
 
 Comparison Component meta-selectors (would be very very slow):
 
