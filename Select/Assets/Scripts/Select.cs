@@ -93,7 +93,7 @@ public partial class Select : IEnumerable<GameObject>
         return meta;
     }
 
-    void Union(Select selection)
+    public void Union(Select selection)
     {
         foreach (GameObject obj in selection)
         {
