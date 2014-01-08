@@ -37,6 +37,16 @@ public partial class Select
         return this;
     }
 
+    public T First<T>() where T : Component
+    {
+        foreach (T behaviour in Get<T>())
+        {
+            return behaviour;
+        }
+
+        return null;
+    }
+
     public Select Disable<T>() where T : MonoBehaviour
     {
         return Each<T>(component => component.enabled = false);
