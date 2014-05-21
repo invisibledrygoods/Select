@@ -5,7 +5,7 @@ Select adds [CSS selectors](http://api.jquery.com/category/selectors/basic-css-s
 to [Unity](http://unity3d.com/), as well as a few [jQueryish](http://api.jquery.com/) features.
 
 If you don't know what CSS or jQuery are then think of it like `List<GameObject>` on crack
-(and then go [learn you some school](http://learn.jquery.com/about-jquery/how-jquery-works/)).
+(and then go [learn some school](http://learn.jquery.com/about-jquery/how-jquery-works/)).
 
 Examples
 --------
