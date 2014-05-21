@@ -46,13 +46,13 @@ Levy a tax on your new domain:
 Translating selectors between HTML and Unity
 --------------------------------------------
 
-| HTML/CSS     | Unity         |
-|--------------|---------------|
-| tag          | tag           |
-| .class       | .Component    |
-| #id          | #name         |
-| :state       | :boolean      |
-| [attr=value] | [IComparable] |
+| HTML/CSS     | Unity                  |
+|--------------|------------------------|
+| tag          | tag                    |
+| .class       | .Component             |
+| #id          | #name                  |
+| :state       | :boolean               |
+| [attr=value] | [IComparable=Parsable] |
 
 Tests
 -----
