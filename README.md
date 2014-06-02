@@ -83,8 +83,8 @@ heirarchy.
     // deal damage to every mob that has a cursed sword somewhere in their heirarchy
     new Select(".Mob:has(.CursedSword)").Each<Mob>(mob => mob.DealDamage(5));
 
-If you need a feature urgently hit me up and I can work on it.
-
 ####HashSet
 
 This uses `Dictionary<GameObject, bool>` as its main data type right now, it really needs to just use `HashSet<GameObject>`
+
+__If you need a feature urgently hit me up and I can work on it.__
