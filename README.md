@@ -70,11 +70,11 @@ Select that allows you to inject fake results.
 In Progress
 -----------
 
-__Splat:__
+####Splat
 
     new Select("*"); // select everything
 
-__Has meta-selector:__
+####Has meta-selector
 
 These seems really hard. Probably the best bet would be to make a second Select for the inner query then
 prune any selections from the outer query that don't have at least one element of the inner query in their
@@ -84,3 +84,7 @@ heirarchy.
     new Select(".Mob:has(.CursedSword)").Each<Mob>(mob => mob.DealDamage(5));
 
 If you need a feature urgently hit me up and I can work on it.
+
+####HashSet
+
+This uses `Dictionary<GameObject, bool>` as its main data type right now, it really needs to just use `HashSet<GameObject>`
