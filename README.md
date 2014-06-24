@@ -76,7 +76,7 @@ In Progress
 
 ####Has meta-selector
 
-These seems really hard. Probably the best bet would be to make a second Select for the inner query then
+This seems really hard. Probably the best bet would be to make a second Select for the inner query then
 prune any selections from the outer query that don't have at least one element of the inner query in their
 heirarchy.
 
